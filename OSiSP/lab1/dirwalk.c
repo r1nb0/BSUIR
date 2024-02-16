@@ -22,6 +22,10 @@ enum OPTIONS {
 #define FIND_PATH_DIR while(getopt(argc, argv, "ldfs") != -1) { }
 bool DOES_THE_FILE_EXIST(const char* path) { DIR* d; if ((d = opendir(path)) == NULL) return false; closedir(d); return true; }
 
+int compare(const void* first, const void* second) {
+    return strcoll(first, second);
+}
+
 void alloc_memory_and_copy(char*** arr, size_t* arr_size, size_t* capacity, const char* fullpath) {
     if (*arr_size + 1 == *capacity) {
         *capacity *= 2;
@@ -62,6 +66,7 @@ void dirwalk(char* path, const char options[], size_t cnt_options, char*** arr, 
     closedir(d);
 }
 
+
 int main(int argc, char* argv[]){
     setlocale(LC_COLLATE, "ru_RU.UTF-8");
     char** arr_path = NULL;
@@ -97,7 +102,7 @@ int main(int argc, char* argv[]){
     }
     if (arr_path) {
         if (FLAG_LC_COLLATE_SORT)
-            qsort(arr_path, size_arr, sizeof(char*), strcoll);
+            qsort(arr_path, size_arr, sizeof(char*), compare);
         for (size_t j = 0; j < size_arr; ++j) {
             printf("%s\n", arr_path[j]);
         }
