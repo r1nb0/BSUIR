@@ -62,7 +62,6 @@ void dirwalk(char* path, const char options[], size_t cnt_options, char*** arr, 
     closedir(d);
 }
 
-
 int main(int argc, char* argv[]){
     setlocale(LC_COLLATE, "ru_RU.UTF-8");
     char** arr_path = NULL;
