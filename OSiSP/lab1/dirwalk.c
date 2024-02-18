@@ -9,14 +9,14 @@
 #include <locale.h>
 
 enum OPTIONS {
-    IS_REG = 'f',
-    IS_LNK = 'l',
-    IS_DIR = 'd',
-    IS_SORT = 's',
-    IS_ALL_OPT = '-'
+    IS_REG = 0,
+    IS_LNK = 1,
+    IS_DIR = 2,
+    IS_SORT = 3,
+    IS_ALL_OPT = 4
 };
 
-#define COUNT_OPTIONS 4
+#define COUNT_OPTIONS 5
 #define CURRENT_DIR "."
 #define RELOAD_OPTIND optind = 1
 #define FIND_PATH_DIR while(getopt(argc, argv, "ldfs") != -1) { }
@@ -36,7 +36,7 @@ void alloc_memory_and_copy(char*** arr, size_t* arr_size, size_t* capacity, cons
     strncpy((*arr)[(*arr_size)++], fullpath, len_path);
 }
 
-void dirwalk(char* path, const char options[], size_t cnt_options, char*** arr, size_t* arr_size, size_t* capacity){
+void dirwalk(char* path, const bool options[], char*** arr, size_t* arr_size, size_t* capacity){
     if (!path) return;
     struct dirent* dir;
     struct stat sb;
@@ -48,24 +48,22 @@ void dirwalk(char* path, const char options[], size_t cnt_options, char*** arr, 
         sprintf(fullpath, "%s/%s", path, dir->d_name);
         if (lstat(fullpath, &sb) == -1)
             continue;
-        for (size_t i = 0; i < cnt_options; ++i) {
             if ((sb.st_mode & __S_IFMT) == __S_IFDIR){
-                if (options[i] == IS_DIR || options[i] == IS_ALL_OPT) {
+                if (options[IS_DIR] || options[IS_ALL_OPT]) {
                     alloc_memory_and_copy(arr, arr_size, capacity, fullpath);
                 }
-                dirwalk(fullpath, options, cnt_options, arr, arr_size, capacity);
+                dirwalk(fullpath, options,  arr, arr_size, capacity);
             }
-            else if ((sb.st_mode & __S_IFMT) == __S_IFLNK && (options[i] == IS_LNK || options[i] == IS_ALL_OPT)) {
+            else if ((sb.st_mode & __S_IFMT) == __S_IFLNK && (options[IS_LNK] || options[IS_ALL_OPT])) {
                 alloc_memory_and_copy(arr, arr_size, capacity, fullpath);
             }
-            else if ((sb.st_mode & __S_IFMT) == __S_IFREG && (options[i] == IS_REG || options[i] == IS_ALL_OPT)) {
+            else if ((sb.st_mode & __S_IFMT) == __S_IFREG && (options[IS_REG] || options[IS_ALL_OPT])) {
                 alloc_memory_and_copy(arr, arr_size, capacity, fullpath);
             }
-        }
+
     }
     closedir(d);
 }
-
 
 int main(int argc, char* argv[]){
     setlocale(LC_COLLATE, "ru_RU.UTF-8");
@@ -81,27 +79,28 @@ int main(int argc, char* argv[]){
     }
     else path = CURRENT_DIR;
     RELOAD_OPTIND;
+    bool options[COUNT_OPTIONS];
     if (!DOES_THE_FILE_EXIST(path)) {
         printf("Check if the directory or file actually exists!");
     }else {
         bool flag_are_there_any_options = false;
-        int option_ch; char options[COUNT_OPTIONS]; size_t cnt_options = 0;
+        int option_ch;
         while((option_ch = getopt(argc, argv, "ldfs")) != -1){
             switch(option_ch) {
-                case IS_LNK : { options[cnt_options++] = IS_LNK;  break; }
-                case IS_REG : { options[cnt_options++] = IS_REG;   break; }
-                case IS_DIR : { options[cnt_options++] = IS_DIR;  break; }
-                case IS_SORT : { FLAG_LC_COLLATE_SORT = true; break; }
+                case 'l' : { options[IS_LNK] = true;  break; }
+                case 'f' : { options[IS_REG] = true;  break; }
+                case 'd' : { options[IS_DIR] = true;  break; }
+                case 's' : { options[IS_SORT] = true; break; }
                 default : break;
             }
-            if (option_ch != IS_SORT)
+            if (option_ch != 's')
                 flag_are_there_any_options = true;
         }
-        if (!flag_are_there_any_options) options[cnt_options++] = '-';
-        dirwalk(path, options, cnt_options, &arr_path, &size_arr, &capacity);
+        if (!flag_are_there_any_options) options[IS_ALL_OPT] = true;
+        dirwalk(path, options, &arr_path, &size_arr, &capacity);
     }
     if (arr_path) {
-        if (FLAG_LC_COLLATE_SORT)
+        if (options[IS_SORT])
             qsort(arr_path, size_arr, sizeof(char*), compare);
         for (size_t j = 0; j < size_arr; ++j) {
             printf("%s\n", arr_path[j]);
