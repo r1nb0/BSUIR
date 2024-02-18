@@ -69,13 +69,14 @@ int main(int argc, char* argv[]){
     setlocale(LC_COLLATE, "ru_RU.UTF-8");
     char** arr_path = NULL;
     size_t size_arr = 0, capacity = 1;
-    bool FLAG_LC_COLLATE_SORT = false;
+    bool flag_free = false;
     FIND_PATH_DIR;
     char* path = NULL;
     if (optind < argc) {
         const int str_len = strlen(argv[optind]);
         path = (char*)malloc(str_len);
         strncpy(path, argv[optind], str_len);
+        flag_free = true;
     }
     else path = CURRENT_DIR;
     RELOAD_OPTIND;
@@ -109,5 +110,7 @@ int main(int argc, char* argv[]){
             free(arr_path[i]);
         free(arr_path);
     }
+    if (flag_free)
+        free(path);
     return 0;
 }
