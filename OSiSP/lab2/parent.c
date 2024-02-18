@@ -126,6 +126,7 @@ int main(int argc, char* argv[], char* envp[]) {
             for (size_t i = 0; i < INITIAL_SIZE; ++i)
                 free(array_variables[i]);
             free(array_variables);
+            free(child_name);
         }
     }else {
         printf("Launch parameters: parent [filename], "
