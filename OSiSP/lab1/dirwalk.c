@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
     }
     else path = CURRENT_DIR;
     RELOAD_OPTIND;
-    bool options[COUNT_OPTIONS];
+    bool options[COUNT_OPTIONS] = {false, false, false, false, false};
     if (!DOES_THE_FILE_EXIST(path)) {
         printf("Check if the directory or file actually exists!");
     }else {
