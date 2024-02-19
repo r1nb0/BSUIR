@@ -71,8 +71,10 @@ void increment_child_xx(char** file_name) {
 int main(int argc, char* argv[], char* envp[]) {
     if (argc == 2) {
         char* path = argv[PATH_ENVIRONMENT_FILE];
-        char** array_variables = (char**)malloc(INITIAL_SIZE * sizeof(char*));
+        char** array_variables = (char**)calloc(INITIAL_SIZE, sizeof(char*));
+        bool flag_alloc_memory = false;
         if(get_variables(path, &array_variables)) {
+            flag_alloc_memory = true;
             for (size_t i = 0; i < INITIAL_SIZE; ++i)
                     printf("%s\n", array_variables[i]);
             char* child_name = (char*)malloc(9);
@@ -125,8 +127,10 @@ int main(int argc, char* argv[], char* envp[]) {
             }while(flag_continue);
             free(child_name);
         }
-        for (size_t i = 0; i < INITIAL_SIZE; ++i)
-            free(array_variables[i]);
+        if (flag_alloc_memory) {
+            for (size_t i = 0; i < INITIAL_SIZE; ++i)
+                free(array_variables[i]);
+        }
         free(array_variables);
     }else {
         printf("Launch parameters: parent [filename], "
