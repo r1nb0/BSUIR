@@ -49,18 +49,14 @@ void dirwalk(char* path, const bool options[], char*** arr, size_t* arr_size, si
         if (lstat(fullpath, &sb) == -1)
             continue;
             if ((sb.st_mode & __S_IFMT) == __S_IFDIR){
-                if (options[IS_DIR] || options[IS_ALL_OPT]) {
+                if (options[IS_DIR] || options[IS_ALL_OPT])
                     alloc_memory_and_copy(arr, arr_size, capacity, fullpath);
-                }
                 dirwalk(fullpath, options,  arr, arr_size, capacity);
             }
-            else if ((sb.st_mode & __S_IFMT) == __S_IFLNK && (options[IS_LNK] || options[IS_ALL_OPT])) {
+            else if ((sb.st_mode & __S_IFMT) == __S_IFLNK && (options[IS_LNK] || options[IS_ALL_OPT]))
                 alloc_memory_and_copy(arr, arr_size, capacity, fullpath);
-            }
-            else if ((sb.st_mode & __S_IFMT) == __S_IFREG && (options[IS_REG] || options[IS_ALL_OPT])) {
+            else if ((sb.st_mode & __S_IFMT) == __S_IFREG && (options[IS_REG] || options[IS_ALL_OPT]))
                 alloc_memory_and_copy(arr, arr_size, capacity, fullpath);
-            }
-
     }
     closedir(d);
 }
