@@ -14,8 +14,8 @@ typedef struct pair {
     int second;
 }pair;
 
-static size_t cnt = 0;
-static size_t size = 0;
+size_t cnt = 0;
+size_t size = 0;
 pair arr_of_statistic[COUNT_OF_REPEATS];
 pair val_statistic;
 bool continue_collect = true;
