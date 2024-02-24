@@ -8,6 +8,8 @@
 #include "list.h"
 
 #define COUNT_OF_REPEATS 4
+#define SEC_TIMER 3
+#define SEC_FOR_PREFF_G 5
 
 typedef struct pair {
     int first;
@@ -81,7 +83,8 @@ int main() {
                 command_to_stat_for_n_proc(num, false, false);
                 flag_p = true;
                 signal(SIGALRM, allow_all_after_p);
-                alarm(5);
+                alarm(SEC_FOR_PREFF_G);
+
                 break;
             }
             case 'q' : { delete_all_child_proc(), flag_continue = false; break; }
@@ -142,7 +145,7 @@ void make_statistic() {
     do {
         size = 0;
         for (size_t i = 0; i < COUNT_OF_REPEATS; ++i) {
-            alarm(3);
+            alarm(SEC_TIMER);
             size_t j = 0;
             do {
                 if (j % 2 == 0) {
