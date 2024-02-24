@@ -82,7 +82,6 @@ int main() {
                 flag_p = true;
                 signal(SIGALRM, allow_all_after_p);
                 alarm(5);
-
                 break;
             }
             case 'q' : { delete_all_child_proc(), flag_continue = false; break; }
