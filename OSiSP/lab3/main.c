@@ -38,11 +38,6 @@ void command_to_stat_for_n_proc(size_t, bool, bool);
 void command_to_show_stat_for_all_proc(bool);
 void allow_all_after_p();
 
-
-void print_hello() {
-    printf("HELLO");
-}
-
 int main() {
     int num = 0;
     signal(SIGINT, show_statistic);
