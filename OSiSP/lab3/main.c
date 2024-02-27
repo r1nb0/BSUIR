@@ -8,7 +8,7 @@
 #include "list.h"
 
 #define COUNT_OF_REPEATS 4
-#define SEC_TIMER 3
+#define SEC_TIMER 1
 #define SEC_FOR_PREFF_G 5
 
 typedef struct pair {
@@ -79,7 +79,6 @@ int main() {
                 flag_p = true;
                 signal(SIGALRM, allow_all_after_p);
                 alarm(SEC_FOR_PREFF_G);
-
                 break;
             }
             case 'q' : { delete_all_child_proc(), flag_continue = false; break; }
@@ -117,7 +116,7 @@ void disable_statistic_output() {
 
 void show_statistic() {
     printf("Statistic of child process with PID = %d, PPID = %d All values: ", getpid(), getppid());
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < COUNT_OF_REPEATS; ++i) {
         printf("{%d, %d} ", arr_of_statistic[i].first, arr_of_statistic[i].second);
     }
     printf("\n");
