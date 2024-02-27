@@ -13,6 +13,10 @@
 #define NAME_PROGRAM 0
 #define PATH_ENVIRONMENT_FILE 1
 
+int compare(const void* a, const void* b) {
+    return strcoll((const char*)a, (const char*)b);
+}
+
 bool get_variables(const char* path, char*** buffer) {
     FILE* file = NULL;
     if ((file = fopen(path, "r")) != NULL) {
@@ -68,13 +72,17 @@ void increment_child_xx(char** file_name) {
     (*file_name)[7]++;
 }
 
+
+
 int main(int argc, char* argv[], char* envp[]) {
+    setlocale(LC_COLLATE, "C");
     if (argc == 2) {
         char* path = argv[PATH_ENVIRONMENT_FILE];
         char** array_variables = (char**)calloc(INITIAL_SIZE, sizeof(char*));
         bool flag_alloc_memory = false;
         if(get_variables(path, &array_variables)) {
             flag_alloc_memory = true;
+            qsort(array_variables, INITIAL_SIZE, sizeof(char*), compare);
             for (size_t i = 0; i < INITIAL_SIZE; ++i)
                     printf("%s\n", array_variables[i]);
             char* child_name = (char*)malloc(9);
