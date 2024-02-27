@@ -7,9 +7,10 @@
 #include <time.h>
 #include "list.h"
 
-#define COUNT_OF_REPEATS 4
-#define SEC_TIMER 1
-#define SEC_FOR_PREFF_G 5
+#define COUNT_OF_REPEATS 116
+#define SEC_TIMER 10116
+#define ARR_SIZE 4
+#define SEC_FOR_WAIT 5
 
 typedef struct pair {
     int first;
@@ -105,7 +106,6 @@ void command_to_stat_for_n_proc(size_t n, bool allow_flag, bool query_flag) {
     }else printf("There is no child process with this number.\n");
 }
 
-
 void allow_statistic_output() {
     collect = true;
 }
@@ -116,7 +116,7 @@ void disable_statistic_output() {
 
 void show_statistic() {
     printf("Statistic of child process with PID = %d, PPID = %d All values: ", getpid(), getppid());
-    for (size_t i = 0; i < COUNT_OF_REPEATS; ++i) {
+    for (size_t i = 0; i < ARR_SIZE; ++i) {
         printf("{%d, %d} ", arr_of_statistic[i].first, arr_of_statistic[i].second);
     }
     printf("\n");
@@ -129,6 +129,10 @@ void take_statistic() {
 }
 
 void delete_last_proc() {
+    if (!head->next) {
+        printf("No child processes.\n");
+        return;
+    }
     pid_t pid = pop_list(&head);
     kill(pid, SIGKILL);
     printf("Child process with PID = %d successfully deleted.\n", pid);
@@ -137,9 +141,10 @@ void delete_last_proc() {
 
 void make_statistic() {
     do {
-        size = 0;
         for (size_t i = 0; i < COUNT_OF_REPEATS; ++i) {
-            alarm(SEC_TIMER);
+            if (size == ARR_SIZE)
+                size = 0;
+            ualarm(SEC_TIMER, 0);
             size_t j = 0;
             do {
                 if (j % 2 == 0) {
