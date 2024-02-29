@@ -8,9 +8,9 @@
 #include "list.h"
 
 #define COUNT_OF_REPEATS 116
-#define SEC_TIMER 10116
+#define SEC_TIMER 16116
 #define ARR_SIZE 4
-#define SEC_FOR_WAIT 5
+#define SEC_FOR_PREFF_G 5
 
 typedef struct pair {
     int first;
@@ -76,7 +76,6 @@ int main() {
                 printf("Enter the number of the process that will display statistics: ");
                 scanf("%d", &num);
                 command_to_stat_for_n_proc(num, true, true);
-                command_to_stat_for_n_proc(num, false, false);
                 flag_p = true;
                 signal(SIGALRM, allow_all_after_p);
                 alarm(SEC_FOR_PREFF_G);
@@ -147,13 +146,8 @@ void make_statistic() {
             ualarm(SEC_TIMER, 0);
             size_t j = 0;
             do {
-                if (j % 2 == 0) {
-                    val_statistic.first = 0;
-                    val_statistic.second = 0;
-                }else {
-                    val_statistic.first = 1;
-                    val_statistic.second = 1;
-                }
+                val_statistic.first = j % 2;
+                val_statistic.second = j % 2;
                 j++;
             }while(continue_collect);
             continue_collect = true;
