@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
+
 #define INITIAL_SIZE 7
 #define MAX_LEN_FILE_STR 255
 #define ENVIRONMENT_VALUE_CHILD "CHILD_PATH"
@@ -98,7 +99,6 @@ int main(int argc, char* argv[], char* envp[]) {
                             execve(path_child, newargv, envp);
                         }else {
                             increment_child_xx(&child_name);
-                            wait(-1);
                         }
                         break;
                     }
@@ -112,7 +112,6 @@ int main(int argc, char* argv[], char* envp[]) {
                             }
                         }else {
                             increment_child_xx(&child_name);
-                            wait(-1);
                         }
                         break;
                     }
@@ -126,12 +125,12 @@ int main(int argc, char* argv[], char* envp[]) {
                             }
                         }else {
                             increment_child_xx(&child_name);
-                            wait(-1);
                         }
                         break;
                     }
                     default: { flag_continue = false; break; }
                 }
+                waitpid(-1, NULL, WNOHANG);
                 getchar();
             }while(flag_continue);
             free(child_name);
