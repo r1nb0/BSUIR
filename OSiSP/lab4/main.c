@@ -71,7 +71,7 @@ void delete_all_child_proc(node_list* head) {
 }
 
 void generate_message() {
-
+    //func generate message for producer
 }
 
 void handler_stop_proc() {
@@ -143,6 +143,8 @@ int main() {
         waitpid(-1, &status, WNOHANG);
         getchar();
     }while(FLAG_CONTINUE);
+
+    //add free dynamic_list
 
     sem_unlink("SEMAPHORE_FILLED");
     sem_unlink("SEMAPHORE_EMPTY");
