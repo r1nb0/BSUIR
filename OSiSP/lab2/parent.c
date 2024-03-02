@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <sys/wait.h>
 #define INITIAL_SIZE 7
 #define MAX_LEN_FILE_STR 255
 #define ENVIRONMENT_VALUE_CHILD "CHILD_PATH"
@@ -72,8 +72,6 @@ void increment_child_xx(char** file_name) {
     (*file_name)[7]++;
 }
 
-
-
 int main(int argc, char* argv[], char* envp[]) {
     setlocale(LC_COLLATE, "C");
     if (argc == 2) {
@@ -100,6 +98,7 @@ int main(int argc, char* argv[], char* envp[]) {
                             execve(path_child, newargv, envp);
                         }else {
                             increment_child_xx(&child_name);
+                            wait(-1);
                         }
                         break;
                     }
@@ -113,6 +112,7 @@ int main(int argc, char* argv[], char* envp[]) {
                             }
                         }else {
                             increment_child_xx(&child_name);
+                            wait(-1);
                         }
                         break;
                     }
@@ -126,6 +126,7 @@ int main(int argc, char* argv[], char* envp[]) {
                             }
                         }else {
                             increment_child_xx(&child_name);
+                            wait(-1);
                         }
                         break;
                     }
