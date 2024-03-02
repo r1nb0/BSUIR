@@ -82,10 +82,12 @@ int main() {
                 break;
             }
             case 'q' : { delete_all_child_proc(), flag_continue = false; break; }
+            //add wait for zombie_process
             default : { flag_continue = false; break; }
         }
         getchar();
     }while(flag_continue);
+    //free memory from list
     return 0;
 }
 
