@@ -46,7 +46,7 @@ void append(ring_shared_buffer** __begin) {
     __curr->shmid_prev = __buffer->shmid_curr;
 }
 
-void add_message(ring_shared_buffer* __ring, const char* __message) {
+void add_message(ring_shared_buffer* __ring, const u_int8_t* __message) {
     if (__ring == NULL) {
         printf("The ring is empty.\n");
         return;
@@ -60,13 +60,17 @@ void add_message(ring_shared_buffer* __ring, const char* __message) {
         printf("No free places.\n");
         return;
     }
-    strncpy(__curr->message, __message, LEN_MESSAGE * sizeof(char));
+    for (size_t i = 0; i < LEN_MESSAGE; ++i)
+        __curr->message[i] = __message[i];
+    //strncpy(__curr->message, __message, LEN_MESSAGE * sizeof(char));
+    for (size_t i = 0; i < LEN_MESSAGE; ++i)
+        __curr->message[i] = __message[i];
     __curr->flag_is_busy = true;
     __ring->shmid_tail = __curr->shmid_next;
     __ring->produced++;
 }
 
-char* extract_message(ring_shared_buffer* __ring) {
+u_int8_t* extract_message(ring_shared_buffer* __ring) {
     if (__ring == NULL) {
         printf("The ring is empty.\n");
         return NULL;
@@ -81,8 +85,11 @@ char* extract_message(ring_shared_buffer* __ring) {
         return NULL;
     }
     __curr->flag_is_busy = false;
-    char* __message = calloc(LEN_MESSAGE, sizeof(char));
-    strncpy(__message, __curr->message,  LEN_MESSAGE * sizeof(char));
+    u_int8_t* __message = (u_int8_t*)calloc(LEN_MESSAGE, sizeof(u_int8_t));
+
+    //strncpy(__message, __curr->message,  LEN_MESSAGE * sizeof(char));
+    for (size_t i = 0; i < LEN_MESSAGE; ++i)
+        __message[i] =  __curr->message[i];
     __ring->shmid_begin = __curr->shmid_next;
     __ring->consumed++;
     return __message;
