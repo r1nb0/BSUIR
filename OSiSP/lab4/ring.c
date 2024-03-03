@@ -94,3 +94,18 @@ u_int8_t* extract_message(ring_shared_buffer* __ring) {
     __ring->consumed++;
     return __message;
 }
+
+void clear_shared_memory(ring_shared_buffer* ring_queue) {
+    int32_t curr;
+    node_ring* buffer = shmat(ring_queue->shmid_begin, NULL, 0);
+    while(buffer->shmid_next != ring_queue->shmid_tail) {
+        curr = buffer->shmid_curr;
+        int32_t shmid_next = buffer->shmid_next;
+        shmdt(buffer);
+        shmctl(curr, IPC_RMID, NULL);
+        buffer = shmat(shmid_next, NULL, 0);
+    }
+    curr = ring_queue->shmid;
+    shmdt(ring_queue);
+    shmctl(curr, IPC_RMID, NULL);
+}
