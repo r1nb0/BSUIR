@@ -24,6 +24,7 @@ sem_t* SEMAPHORE_FILLED;
 sem_t* SEMAPHORE_MUTEX;
 bool FLAG_CONTINUE = true;
 
+u_int16_t control_sum(const u_int8_t*, size_t);
 void producer(int32_t);
 void consumer(int32_t);
 u_int8_t* generate_message();
