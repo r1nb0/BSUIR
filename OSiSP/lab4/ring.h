@@ -13,7 +13,7 @@ typedef struct node_ring {
     int32_t shmid_curr;
     int32_t shmid_next;
     int32_t shmid_prev;
-    char message[LEN_MESSAGE];
+    u_int8_t message[LEN_MESSAGE];
     bool flag_is_busy;
 }node_ring;
 
@@ -29,7 +29,8 @@ typedef struct ring_shared_buffer {
 node_ring* constructor_node();
 ring_shared_buffer* constructor_ring();
 void append(ring_shared_buffer**);
-void add_message(ring_shared_buffer*, const char*);
-char* extract_message(ring_shared_buffer*);
+void add_message(ring_shared_buffer*, const u_int8_t*);
+u_int8_t* extract_message(ring_shared_buffer*);
+void clear_shared_memory(ring_shared_buffer*);
 
 #endif //RING_H
