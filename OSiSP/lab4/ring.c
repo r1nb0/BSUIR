@@ -62,7 +62,7 @@ void add_message(ring_shared_buffer* __ring, const u_int8_t* __message) {
     }
     for (size_t i = 0; i < LEN_MESSAGE; ++i)
         __curr->message[i] = __message[i];
-    //strncpy(__curr->message, __message, LEN_MESSAGE * sizeof(char));
+   
     for (size_t i = 0; i < LEN_MESSAGE; ++i)
         __curr->message[i] = __message[i];
     __curr->flag_is_busy = true;
@@ -86,8 +86,7 @@ u_int8_t* extract_message(ring_shared_buffer* __ring) {
     }
     __curr->flag_is_busy = false;
     u_int8_t* __message = (u_int8_t*)calloc(LEN_MESSAGE, sizeof(u_int8_t));
-
-    //strncpy(__message, __curr->message,  LEN_MESSAGE * sizeof(char));
+    
     for (size_t i = 0; i < LEN_MESSAGE; ++i)
         __message[i] =  __curr->message[i];
     __ring->shmid_begin = __curr->shmid_next;
@@ -105,6 +104,9 @@ void clear_shared_memory(ring_shared_buffer* ring_queue) {
         shmctl(curr, IPC_RMID, NULL);
         buffer = shmat(shmid_next, NULL, 0);
     }
+    curr = buffer->shmid_curr;
+    shmdt(buffer);
+    shmctl(curr, IPC_RMID, NULL);
     curr = ring_queue->shmid;
     shmdt(ring_queue);
     shmctl(curr, IPC_RMID, NULL);
