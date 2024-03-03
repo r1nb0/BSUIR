@@ -159,11 +159,11 @@ void consumer(int32_t shmid) {
         sleep(2);
         u_int8_t* message = extract_message(queue);
         sem_post(SEMAPHORE_MUTEX);
+        sem_post(SEMAPHORE_EMPTY);
         display_message(message);
         free(message);
         printf("Consumed from CHILD with PID = %d\n", getpid());
         printf("Total messages retrieved = %lu\n", queue->consumed);
-        sem_post(SEMAPHORE_EMPTY);
     }while(FLAG_CONTINUE);
     shmdt(queue);
 }
@@ -174,11 +174,13 @@ void producer(int32_t shmid) {
         sem_wait(SEMAPHORE_EMPTY);
         sem_wait(SEMAPHORE_MUTEX);
         sleep(2);
-        add_message(queue, generate_message());
+        u_int8_t* new_message = generate_message();
+        add_message(queue, new_message);
         sem_post(SEMAPHORE_MUTEX);
+        sem_post(SEMAPHORE_FILLED);
+        free(new_message);
         printf("Produced from CHILD with PID = %d\n", getpid());
         printf("Total ojbects created = %lu\n", queue->produced);
-        sem_post(SEMAPHORE_FILLED);
     }while(FLAG_CONTINUE);
     shmdt(queue);
 }
