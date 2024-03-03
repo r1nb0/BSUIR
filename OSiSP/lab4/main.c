@@ -24,97 +24,12 @@ sem_t* SEMAPHORE_FILLED;
 sem_t* SEMAPHORE_MUTEX;
 bool FLAG_CONTINUE = true;
 
-
-void clear_shared_memory(ring_shared_buffer* ring_queue) {
-    int32_t curr;
-    node_ring* buffer = shmat(ring_queue->shmid_begin, NULL, 0);
-    while(buffer->shmid_next != ring_queue->shmid_tail) {
-        curr = buffer->shmid_curr;
-        int32_t shmid_next = buffer->shmid_next;
-        shmdt(buffer);
-        shmctl(curr, IPC_RMID, NULL);
-        buffer = shmat(shmid_next, NULL, 0);
-    }
-    curr = ring_queue->shmid;
-    shmdt(ring_queue);
-    shmctl(curr, IPC_RMID, NULL);
-}
-
-void delete_all_child_proc(node_list* head) {
-    //shmdt (ring_queue)
-    while(head->next) {
-        pid_t pid = pop_list(&head);
-        kill(pid, SIGKILL);
-    }
-    printf("All child processes are deleted.\n");
-}
-
-u_int16_t control_sum(const u_int8_t* data, size_t length) {
-    u_int16_t hash = 0;
-    for (size_t i = 0; i < length; ++i) {
-        hash += data[i];
-    }
-    return hash;
-}
-
-u_int8_t* generate_message() {
-    srand(time(NULL));
-    u_int8_t* result_message = (u_int8_t*)calloc(LEN_MESSAGE , sizeof(u_int8_t));
-    size_t size = 0;
-    while(size == 0) size = rand() % 257;
-    for (size_t i = DATA_BEGIN; i < size; ++i) {
-        result_message[i] = rand() % 256;
-    }
-    u_int16_t hash = control_sum(result_message, size);
-    result_message[TYPE] = 1;
-    result_message[HIGH_BYTE_HASH] = (hash >> 8) & 0xFF;
-    result_message[LOW_BYTE_HASH] = hash & 0xFF;
-    result_message[SIZE] = size;
-    return result_message;
-}
-
-void display_message(const u_int8_t* message) {
-    for (size_t i = 0; i < message[SIZE]; ++i)
-        printf("%02X", message[i]);
-    printf("\n");
-}
-
-void handler_stop_proc() {
-    FLAG_CONTINUE = false;
-}
-
-void consumer(int32_t shmid) {
-    ring_shared_buffer* queue = shmat(shmid, NULL, 0);
-    do {
-        sem_wait(SEMAPHORE_FILLED);
-        sem_wait(SEMAPHORE_MUTEX);
-        sleep(2);
-        u_int8_t* message = extract_message(queue);
-        sem_post(SEMAPHORE_MUTEX);
-        display_message(message);
-        free(message);
-        printf("Consumed from CHILD with PID = %d\n", getpid());
-        printf("Total messages retrieved = %lu\n", queue->consumed);
-        sem_post(SEMAPHORE_EMPTY);
-    }while(FLAG_CONTINUE);
-    shmdt(queue);
-}
-
-void producer(int32_t shmid) {
-    ring_shared_buffer* queue = shmat(shmid, NULL, 0);
-    do {
-        sem_wait(SEMAPHORE_EMPTY);
-        sem_wait(SEMAPHORE_MUTEX);
-        sleep(2);
-        add_message(queue, generate_message());
-        sem_post(SEMAPHORE_MUTEX);
-        printf("Produced from CHILD with PID = %d\n", getpid());
-        printf("Total ojbects created = %lu\n", queue->produced);
-        sem_post(SEMAPHORE_FILLED);
-    }while(FLAG_CONTINUE);
-    shmdt(queue);
-}
-
+void producer(int32_t);
+void consumer(int32_t);
+u_int8_t* generate_message();
+void handler_stop_proc();
+void display_message(const u_int8_t* message);
+void delete_all_child_proc(node_list* head);
 
 int main() {
     signal(SIGUSR1, handler_stop_proc);
@@ -191,4 +106,79 @@ int main() {
     sem_close(SEMAPHORE_FILLED);
 
     return 0;
+}
+
+void delete_all_child_proc(node_list* head) {
+    //shmdt (ring_queue)
+    while(head->next) {
+        pid_t pid = pop_list(&head);
+        kill(pid, SIGKILL);
+    }
+    printf("All child processes are deleted.\n");
+}
+
+u_int16_t control_sum(const u_int8_t* data, size_t length) {
+    u_int16_t hash = 0;
+    for (size_t i = 0; i < length; ++i) {
+        hash += data[i];
+    }
+    return hash;
+}
+
+u_int8_t* generate_message() {
+    srand(time(NULL));
+    u_int8_t* result_message = (u_int8_t*)calloc(LEN_MESSAGE , sizeof(u_int8_t));
+    size_t size = 0;
+    while(size == 0) size = rand() % 257;
+    for (size_t i = DATA_BEGIN; i < size; ++i) {
+        result_message[i] = rand() % 256;
+    }
+    u_int16_t hash = control_sum(result_message, size);
+    result_message[TYPE] = 1;
+    result_message[HIGH_BYTE_HASH] = (hash >> 8) & 0xFF;
+    result_message[LOW_BYTE_HASH] = hash & 0xFF;
+    result_message[SIZE] = size;
+    return result_message;
+}
+
+void display_message(const u_int8_t* message) {
+    for (size_t i = 0; i < message[SIZE]; ++i)
+        printf("%02X", message[i]);
+    printf("\n");
+}
+
+void handler_stop_proc() {
+    FLAG_CONTINUE = false;
+}
+
+void consumer(int32_t shmid) {
+    ring_shared_buffer* queue = shmat(shmid, NULL, 0);
+    do {
+        sem_wait(SEMAPHORE_FILLED);
+        sem_wait(SEMAPHORE_MUTEX);
+        sleep(2);
+        u_int8_t* message = extract_message(queue);
+        sem_post(SEMAPHORE_MUTEX);
+        display_message(message);
+        free(message);
+        printf("Consumed from CHILD with PID = %d\n", getpid());
+        printf("Total messages retrieved = %lu\n", queue->consumed);
+        sem_post(SEMAPHORE_EMPTY);
+    }while(FLAG_CONTINUE);
+    shmdt(queue);
+}
+
+void producer(int32_t shmid) {
+    ring_shared_buffer* queue = shmat(shmid, NULL, 0);
+    do {
+        sem_wait(SEMAPHORE_EMPTY);
+        sem_wait(SEMAPHORE_MUTEX);
+        sleep(2);
+        add_message(queue, generate_message());
+        sem_post(SEMAPHORE_MUTEX);
+        printf("Produced from CHILD with PID = %d\n", getpid());
+        printf("Total ojbects created = %lu\n", queue->produced);
+        sem_post(SEMAPHORE_FILLED);
+    }while(FLAG_CONTINUE);
+    shmdt(queue);
 }
