@@ -9,7 +9,7 @@
 #include "list.h"
 #include <time.h>
 
-#define BUFFER_SIZE 1
+#define BUFFER_SIZE 6
 
 enum structure_of_message {
     TYPE = 0,
