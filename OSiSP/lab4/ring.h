@@ -18,7 +18,6 @@ typedef struct node_ring {
 }node_ring;
 
 typedef struct ring_shared_buffer {
-    key_t key_ring;
     int32_t shmid;
     size_t consumed;
     size_t produced;
@@ -27,7 +26,7 @@ typedef struct ring_shared_buffer {
 }ring_shared_buffer;
 
 node_ring* constructor_node();
-ring_shared_buffer* constructor_ring();
+ring_shared_buffer* constructor_buffer();
 void append(ring_shared_buffer**);
 void add_message(ring_shared_buffer*, const u_int8_t*);
 u_int8_t* extract_message(ring_shared_buffer*);
