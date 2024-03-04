@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include "list.h"
 
-#define BUFFER_SIZE 6
+#define BUFFER_SIZE 0
 
 enum structure_of_message {
     TYPE = 0,
@@ -23,6 +23,7 @@ enum structure_of_message {
 
 sem_t* SEMAPHORE_EMPTY;
 sem_t* SEMAPHORE_FILLED;
+sem_t* SEMAPHORE_BLOCK_ALL;
 pthread_mutex_t mutex;
 ring_buffer* queue = NULL;
 _Thread_local bool FLAG_CONTINUE = true;
@@ -41,11 +42,12 @@ int main(void) {
 
     sem_unlink("SEMAPHORE_FILLED");
     sem_unlink("SEMAPHORE_EMPTY");
-    sem_unlink("SEMAPHORE_MUTEX");
+    sem_unlink("SEMAPHORE_BLOCK_ALL");
 
 
     SEMAPHORE_FILLED = sem_open("SEMAPHORE_FILLED", O_CREAT, 0777, 0);
     SEMAPHORE_EMPTY = sem_open("SEMAPHORE_EMPTY", O_CREAT, 0777, BUFFER_SIZE);
+    SEMAPHORE_BLOCK_ALL = sem_open("SEMAPHORE_BLOCK_ALL", O_CREAT, 0777, 1);
     pthread_mutex_init(&mutex, NULL);
 
     for (size_t i = 0; i < BUFFER_SIZE; ++i)
@@ -88,17 +90,25 @@ int main(void) {
             }
 
             case '-' : {
-
+                pthread_mutex_lock(&mutex);
+            //    if (sem_getvalue())
+            //    resize_queue
+                pthread_mutex_unlock(&mutex);
+                break;
             }
-
             default : {flag = false; break; }
         }
+        //free pthreads
         getchar();
     }while(flag);
 
+    //free list
+    //free queue
+
     sem_unlink("SEMAPHORE_FILLED");
     sem_unlink("SEMAPHORE_EMPTY");
-
+    sem_unlink("SEMAPHORE_BLOCK_ALL");
+    
     sem_close(SEMAPHORE_EMPTY);
     sem_close(SEMAPHORE_FILLED);
 
@@ -144,10 +154,10 @@ void consumer() {
     signal(SIGUSR1, handler_stop_proc);
     do {
         sem_wait(SEMAPHORE_FILLED);
-        pthread_mutex_lock(&mutex);
+        sem_wait(SEMAPHORE_BLOCK_ALL);
         sleep(2);
         u_int8_t* message = extract_message(queue);
-        pthread_mutex_unlock(&mutex);
+        sem_post(SEMAPHORE_BLOCK_ALL);
         sem_post(SEMAPHORE_EMPTY);
         display_message(message);
         free(message);
@@ -160,11 +170,11 @@ void producer() {
     signal(SIGUSR1, handler_stop_proc);
     do {
         sem_wait(SEMAPHORE_EMPTY);
-        pthread_mutex_lock(&mutex);
+        sem_wait(SEMAPHORE_BLOCK_ALL);
         sleep(2);
         u_int8_t* new_message = generate_message();
         add_message(queue, new_message);
-        pthread_mutex_unlock(&mutex);
+        sem_post(SEMAPHORE_BLOCK_ALL);
         sem_post(SEMAPHORE_FILLED);
         free(new_message);
         printf("Produced from pthread with id = %lu\n", pthread_self());
