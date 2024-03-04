@@ -49,7 +49,7 @@ int main(void) {
     pthread_mutex_init(&mutex, NULL);
 
     for (size_t i = 0; i < BUFFER_SIZE; ++i)
-        append(&queue);
+        append(&queue, false);
 
     bool flag = true;
     do {
@@ -58,7 +58,6 @@ int main(void) {
             case 'p' : {
                 pthread_t pthread_producer;
                 pthread_create(&pthread_producer, NULL, producer, NULL);
-                printf("%lu\n", pthread_producer);
                 push_list(&list_of_ptreads, pthread_producer, 'P');
                 break;
             }
@@ -76,10 +75,22 @@ int main(void) {
                 size_t num;
                 scanf("%lu", &num);
                 pthread_t pthread_id;
-                printf("%lu\n", pthread_id);
                 if (erase_list(&list_of_ptreads, num, &pthread_id)) pthread_kill(pthread_id, SIGUSR1);
                 break;
             }
+            case '+' : {
+                pthread_mutex_lock(&mutex);
+                printf("insert\n");
+                append(&queue, true);
+                sem_post(SEMAPHORE_EMPTY);
+                pthread_mutex_unlock(&mutex);
+                break;
+            }
+
+            case '-' : {
+
+            }
+
             default : {flag = false; break; }
         }
         getchar();

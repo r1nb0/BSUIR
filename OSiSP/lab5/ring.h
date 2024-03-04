@@ -24,7 +24,7 @@ typedef struct ring_buffer {
 
 ring_node* constructor_node();
 ring_buffer* constructor_buffer();
-void append(ring_buffer**);
+void append(ring_buffer**, bool);
 void erase(ring_buffer**);
 void add_message(ring_buffer*, const u_int8_t*);
 u_int8_t* extract_message(ring_buffer*);

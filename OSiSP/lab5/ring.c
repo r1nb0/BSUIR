@@ -17,7 +17,7 @@ ring_buffer* constructor_buffer() {
     return buffer;
 }
 
-void append(ring_buffer** __head) {
+void append(ring_buffer** __head, bool flag_after) {
     if (__head == NULL)
         exit(-100);
     if (*__head == NULL) {
@@ -26,16 +26,23 @@ void append(ring_buffer** __head) {
         (*__head)->begin->next = (*__head)->begin->prev = (*__head)->begin;
         return;
     }
-    ring_node* buffer = constructor_node();
+    ring_node* __buffer = constructor_node();
     if ((*__head)->begin->next == (*__head)->begin) {
-        (*__head)->begin->next = (*__head)->begin->prev = buffer;
-        buffer->next = buffer->prev = (*__head)->begin;
+        (*__head)->begin->next = (*__head)->begin->prev = __buffer;
+        __buffer->next = __buffer->prev = (*__head)->begin;
         return;
     }
-    buffer->next = (*__head)->begin;
-    buffer->prev = (*__head)->begin->prev;
-    buffer->prev->next = buffer;
-    (*__head)->begin->prev = buffer;
+    __buffer->next = (*__head)->begin;
+    __buffer->prev = (*__head)->begin->prev;
+    __buffer->prev->next = __buffer;
+    (*__head)->begin->prev = __buffer;
+    if (flag_after) {
+        if (__buffer->next == (*__head)->tail) {
+            if ((*__head)->tail == (*__head)->begin && !(*__head)->begin->flag_is_busy) {
+                (*__head)->tail = (*__head)->begin = __buffer;
+            }else (*__head)->tail = __buffer;
+        }
+    }
 }
 
 void erase(ring_buffer** __head) {
