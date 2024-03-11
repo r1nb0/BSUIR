@@ -57,6 +57,28 @@ pthread_t pop_list(node_list** head) {
     return pid;
 }
 
+void clear_list(node_list** head) {
+    if (head == NULL) {
+        return;
+    }
+    if (*head == NULL) {
+        printf("List is empty!");
+        return;
+    }
+    if ((*head)->next == NULL) {
+        free(*head);
+        *head = NULL;
+        return;
+    }
+    node_list* prev = *head;
+    while(*head) {
+        prev = *head;
+        *head = (*head)->next;
+        free(prev);
+    }
+    *head = NULL;
+}
+
 bool erase_list(node_list** head, size_t num, pthread_t* pthread_id) {
     if (head == NULL) {
         exit(-2);

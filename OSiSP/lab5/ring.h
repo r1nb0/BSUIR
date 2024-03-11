@@ -20,12 +20,14 @@ typedef struct ring_buffer {
     ring_node* tail;
     size_t produced;
     size_t consumed;
+    size_t size_queue;
 }ring_buffer;
 
 ring_node* constructor_node();
 ring_buffer* constructor_buffer();
 void append(ring_buffer**, bool);
-void erase(ring_buffer**);
+bool erase(ring_buffer**);
+void clear_ring(ring_buffer**);
 void add_message(ring_buffer*, const u_int8_t*);
 u_int8_t* extract_message(ring_buffer*);
 

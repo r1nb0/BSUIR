@@ -3,7 +3,7 @@
 #include <inttypes.h>
 
 ring_node* constructor_node() {
-    ring_node* buffer = (ring_node*)malloc(sizeof(ring_node));
+    ring_node* buffer = (ring_node*)calloc(1, sizeof(ring_node));
     buffer->next = NULL;
     buffer->prev = NULL;
     buffer->flag_is_busy = false;
@@ -14,6 +14,7 @@ ring_buffer* constructor_buffer() {
     ring_buffer* buffer = (ring_buffer*)malloc(sizeof(ring_buffer));
     buffer->begin = NULL;
     buffer->tail = NULL;
+    buffer->size_queue = 0;
     return buffer;
 }
 
@@ -24,29 +25,100 @@ void append(ring_buffer** __head, bool flag_after) {
         *__head = constructor_buffer();
         (*__head)->begin = (*__head)->tail = constructor_node();
         (*__head)->begin->next = (*__head)->begin->prev = (*__head)->begin;
+        (*__head)->size_queue++;
         return;
     }
+    (*__head)->size_queue++;
     ring_node* __buffer = constructor_node();
+    // if ((*__head)->begin->next == (*__head)->begin) {
+    //     (*__head)->begin->next = (*__head)->begin->prev = __buffer;
+    //     __buffer->next = __buffer->prev = (*__head)->begin;
+    //     return;
+    // }
     if ((*__head)->begin->next == (*__head)->begin) {
         (*__head)->begin->next = (*__head)->begin->prev = __buffer;
         __buffer->next = __buffer->prev = (*__head)->begin;
-        return;
+    }else {
+        __buffer->next = (*__head)->begin;
+        __buffer->prev = (*__head)->begin->prev;
+        __buffer->prev->next = __buffer;
+        (*__head)->begin->prev = __buffer;
     }
-    __buffer->next = (*__head)->begin;
-    __buffer->prev = (*__head)->begin->prev;
-    __buffer->prev->next = __buffer;
-    (*__head)->begin->prev = __buffer;
     if (flag_after) {
         if (__buffer->next == (*__head)->tail) {
-            if ((*__head)->tail == (*__head)->begin && !(*__head)->begin->flag_is_busy) {
+            if ((*__head)->tail == (*__head)->begin && (*__head)->begin->flag_is_busy == false) {
                 (*__head)->tail = (*__head)->begin = __buffer;
             }else (*__head)->tail = __buffer;
         }
     }
 }
 
-void erase(ring_buffer** __head) {
+bool erase(ring_buffer** __head) {
+    if (__head == NULL) {
+        exit(-100);
+    }
+    if (*__head == NULL) {
+        printf("The queue is empty.");
+        exit(-100);
+    }
+    if((*__head)->begin == NULL) {
+        printf("The queue is empty.");
+        exit(-100);
+    }
+    (*__head)->size_queue--;
+    bool result;
+    if ((*__head)->tail == (*__head)->begin) {
+        if ((*__head)->begin == (*__head)->begin->next) {
+            result = (*__head)->begin->flag_is_busy;
+            free((*__head)->begin);
+            //maybe only (*__head)->begin = NULL
+            (*__head)->begin = (*__head)->tail = (*__head)->begin->next = (*__head)->begin->prev = NULL;
+            *__head = NULL;
+        }else {
+            ring_node* buffer = (*__head)->begin;
+            (*__head)->begin->next->prev = (*__head)->begin->prev;
+            (*__head)->begin->prev->next = (*__head)->begin->next;
+            (*__head)->begin = (*__head)->tail = (*__head)->begin->next;
+            result = buffer->flag_is_busy;
+            free(buffer);
+        }
+        return result;
+    }
+    if ((*__head)->begin->next == (*__head)->begin->prev) {
+        (*__head)->tail = (*__head)->tail->prev;
+        result = (*__head)->tail->next->flag_is_busy;
+        free((*__head)->tail->next);
+        (*__head)->tail->next = (*__head)->tail->prev = (*__head)->tail;
+        return result;
+    }
+    ring_node* buffer = (*__head)->tail;
+    (*__head)->tail->next->prev = (*__head)->tail->prev;
+    (*__head)->tail->prev->next = (*__head)->tail->next;
+    (*__head)->tail = (*__head)->tail->next;
+    result = buffer->flag_is_busy;
+    free(buffer);
+    return result;
+}
 
+void clear_ring(ring_buffer** __head) {
+    if (__head == NULL)
+        return;
+    if ((*__head)->size_queue == 0)
+        return;
+    if ((*__head)->size_queue == 1) {
+        free(*__head);
+        *__head = NULL;
+        return;
+    }
+    size_t size_ring = (*__head)->size_queue;
+    ring_node* __cursor = (*__head)->begin;
+    while(size_ring - 1) {
+        free(__cursor->prev);
+        __cursor = __cursor->next;
+        size_ring--;
+    }
+    free(__cursor);
+    *__head = NULL;
 }
 
 void add_message(ring_buffer* __head, const u_int8_t* __message) {

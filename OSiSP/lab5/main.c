@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include "list.h"
 
-#define BUFFER_SIZE 0
+#define BUFFER_SIZE 1
 
 enum structure_of_message {
     TYPE = 0,
@@ -21,12 +21,17 @@ enum structure_of_message {
     DATA_BEGIN = 4
 };
 
+
+size_t cnt_consumers = 0;
+size_t cnt_producers = 0;
 sem_t* SEMAPHORE_EMPTY;
 sem_t* SEMAPHORE_FILLED;
 sem_t* SEMAPHORE_BLOCK_ALL;
 pthread_mutex_t mutex;
 ring_buffer* queue = NULL;
 _Thread_local bool FLAG_CONTINUE = true;
+size_t consumer_passes = 0;
+size_t producer_passes = 0;
 
 
 u_int16_t control_sum(const u_int8_t*, size_t);
@@ -61,12 +66,14 @@ int main(void) {
                 pthread_t pthread_producer;
                 pthread_create(&pthread_producer, NULL, producer, NULL);
                 push_list(&list_of_ptreads, pthread_producer, 'P');
+                cnt_producers++;
                 break;
             }
             case 'c' : {
                 pthread_t pthread_consumer;
                 pthread_create(&pthread_consumer, NULL, consumer, NULL);
                 push_list(&list_of_ptreads, pthread_consumer, 'C');
+                cnt_consumers++;
                 break;
             }
             case 'l' : {
@@ -84,31 +91,41 @@ int main(void) {
                 pthread_mutex_lock(&mutex);
                 printf("insert\n");
                 append(&queue, true);
+                printf("Insert, count of places : %lu\n", queue->size_queue);
                 sem_post(SEMAPHORE_EMPTY);
                 pthread_mutex_unlock(&mutex);
                 break;
             }
-
             case '-' : {
                 pthread_mutex_lock(&mutex);
-            //    if (sem_getvalue())
-            //    resize_queue
+                sleep(2);
+                bool flag_execute = erase(&queue);
+                if (flag_execute == true) {
+                    printf("delete fill\n");
+                }else {
+                    printf("delete empty\n");
+                }
+                if (flag_execute == false) {
+                    producer_passes++;
+                }
+                if (flag_execute == true) {
+                    consumer_passes++;
+                }
                 pthread_mutex_unlock(&mutex);
                 break;
             }
             default : {flag = false; break; }
         }
-        //free pthreads
         getchar();
     }while(flag);
 
-    //free list
-    //free queue
+    free(list_of_ptreads);
+    free(queue);
 
     sem_unlink("SEMAPHORE_FILLED");
     sem_unlink("SEMAPHORE_EMPTY");
     sem_unlink("SEMAPHORE_BLOCK_ALL");
-    
+
     sem_close(SEMAPHORE_EMPTY);
     sem_close(SEMAPHORE_FILLED);
 
@@ -154,30 +171,42 @@ void consumer() {
     signal(SIGUSR1, handler_stop_proc);
     do {
         sem_wait(SEMAPHORE_FILLED);
-        sem_wait(SEMAPHORE_BLOCK_ALL);
+        pthread_mutex_lock(&mutex);
+        if (consumer_passes != 0) {
+            consumer_passes--;
+            pthread_mutex_unlock(&mutex);
+            continue;
+        }
         sleep(2);
         u_int8_t* message = extract_message(queue);
-        sem_post(SEMAPHORE_BLOCK_ALL);
+        pthread_mutex_unlock(&mutex);
         sem_post(SEMAPHORE_EMPTY);
         display_message(message);
         free(message);
         printf("Consumed from pthread with id = %lu\n", pthread_self());
         printf("Total messages retrieved = %lu\n", queue->consumed);
     }while(FLAG_CONTINUE);
+    cnt_consumers--;
 }
 
 void producer() {
     signal(SIGUSR1, handler_stop_proc);
     do {
         sem_wait(SEMAPHORE_EMPTY);
-        sem_wait(SEMAPHORE_BLOCK_ALL);
+        pthread_mutex_lock(&mutex);
+        if (producer_passes != 0) {
+            producer_passes--;
+            pthread_mutex_unlock(&mutex);
+            continue;
+        }
         sleep(2);
         u_int8_t* new_message = generate_message();
         add_message(queue, new_message);
-        sem_post(SEMAPHORE_BLOCK_ALL);
+        pthread_mutex_unlock(&mutex);
         sem_post(SEMAPHORE_FILLED);
         free(new_message);
         printf("Produced from pthread with id = %lu\n", pthread_self());
         printf("Total ojbects created = %lu\n", queue->produced);
     }while(FLAG_CONTINUE);
+    cnt_producers--;
 }

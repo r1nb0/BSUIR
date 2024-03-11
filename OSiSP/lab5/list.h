@@ -15,7 +15,7 @@ node_list* constructor_list(pthread_t, char);
 void push_list(node_list**, pthread_t, char);
 void display_list(const node_list*);
 pthread_t pop_list(node_list**);
-void clear(node_list**);
+void clear_list(node_list**);
 bool erase_list(node_list**, size_t, pthread_t*);
 
 #endif //LIST_H
