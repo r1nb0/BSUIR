@@ -86,7 +86,9 @@ int main(void) {
                 pthread_mutex_lock(&mutex);
                 printf("insert\n");
                 append(&queue, true);
-                printf("Insert, count of places : %lu\n", queue->size_queue);
+                if (queue != NULL) {
+                    printf("Insert, count of places : %lu\n", queue->size_queue);
+                }
                 sem_post(SEMAPHORE_EMPTY);
                 pthread_mutex_unlock(&mutex);
                 break;
@@ -181,6 +183,7 @@ void consumer() {
         printf("Consumed from pthread with id = %lu\n", pthread_self());
         printf("Total messages retrieved = %lu\n", queue->consumed);
     }while(FLAG_CONTINUE);
+    //add pthread_join
 }
 
 void producer() {
@@ -202,4 +205,5 @@ void producer() {
         printf("Produced from pthread with id = %lu\n", pthread_self());
         printf("Total ojbects created = %lu\n", queue->produced);
     }while(FLAG_CONTINUE);
+    //add pthread_join
 }

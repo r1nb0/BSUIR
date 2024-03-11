@@ -30,11 +30,6 @@ void append(ring_buffer** __head, bool flag_after) {
     }
     (*__head)->size_queue++;
     ring_node* __buffer = constructor_node();
-    // if ((*__head)->begin->next == (*__head)->begin) {
-    //     (*__head)->begin->next = (*__head)->begin->prev = __buffer;
-    //     __buffer->next = __buffer->prev = (*__head)->begin;
-    //     return;
-    // }
     if ((*__head)->begin->next == (*__head)->begin) {
         (*__head)->begin->next = (*__head)->begin->prev = __buffer;
         __buffer->next = __buffer->prev = (*__head)->begin;
@@ -71,8 +66,7 @@ bool erase(ring_buffer** __head) {
         if ((*__head)->begin == (*__head)->begin->next) {
             result = (*__head)->begin->flag_is_busy;
             free((*__head)->begin);
-            //maybe only (*__head)->begin = NULL
-            (*__head)->begin = (*__head)->tail = (*__head)->begin->next = (*__head)->begin->prev = NULL;
+            free(*__head);
             *__head = NULL;
         }else {
             ring_node* buffer = (*__head)->begin;
