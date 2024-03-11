@@ -21,9 +21,6 @@ enum structure_of_message {
     DATA_BEGIN = 4
 };
 
-
-size_t cnt_consumers = 0;
-size_t cnt_producers = 0;
 sem_t* SEMAPHORE_EMPTY;
 sem_t* SEMAPHORE_FILLED;
 sem_t* SEMAPHORE_BLOCK_ALL;
@@ -66,14 +63,12 @@ int main(void) {
                 pthread_t pthread_producer;
                 pthread_create(&pthread_producer, NULL, producer, NULL);
                 push_list(&list_of_ptreads, pthread_producer, 'P');
-                cnt_producers++;
                 break;
             }
             case 'c' : {
                 pthread_t pthread_consumer;
                 pthread_create(&pthread_consumer, NULL, consumer, NULL);
                 push_list(&list_of_ptreads, pthread_consumer, 'C');
-                cnt_consumers++;
                 break;
             }
             case 'l' : {
@@ -186,7 +181,6 @@ void consumer() {
         printf("Consumed from pthread with id = %lu\n", pthread_self());
         printf("Total messages retrieved = %lu\n", queue->consumed);
     }while(FLAG_CONTINUE);
-    cnt_consumers--;
 }
 
 void producer() {
@@ -208,5 +202,4 @@ void producer() {
         printf("Produced from pthread with id = %lu\n", pthread_self());
         printf("Total ojbects created = %lu\n", queue->produced);
     }while(FLAG_CONTINUE);
-    cnt_producers--;
 }
