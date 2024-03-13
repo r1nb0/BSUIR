@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include "list.h"
 
-#define BUFFER_SIZE 1
+#define BUFFER_SIZE 2
 
 enum structure_of_message {
     TYPE = 0,
@@ -97,11 +97,6 @@ int main(void) {
                 pthread_mutex_lock(&mutex);
                 sleep(2);
                 bool flag_execute = erase(&queue);
-                if (flag_execute == true) {
-                    printf("delete fill\n");
-                }else {
-                    printf("delete empty\n");
-                }
                 if (flag_execute == false) {
                     producer_passes++;
                 }
@@ -111,7 +106,10 @@ int main(void) {
                 pthread_mutex_unlock(&mutex);
                 break;
             }
-            default : {flag = false; break; }
+            default : {
+                flag = false;
+                break;
+            }
         }
         getchar();
     }while(flag);
@@ -182,8 +180,9 @@ void consumer() {
         free(message);
         printf("Consumed from pthread with id = %lu\n", pthread_self());
         printf("Total messages retrieved = %lu\n", queue->consumed);
+        usleep(20000);
     }while(FLAG_CONTINUE);
-    //add pthread_join
+    pthread_join(pthread_self(), NULL);
 }
 
 void producer() {
@@ -204,6 +203,9 @@ void producer() {
         free(new_message);
         printf("Produced from pthread with id = %lu\n", pthread_self());
         printf("Total ojbects created = %lu\n", queue->produced);
+        usleep(20000);
     }while(FLAG_CONTINUE);
-    //add pthread_join
+    pthread_join(pthread_self(), NULL);
 }
+
+
