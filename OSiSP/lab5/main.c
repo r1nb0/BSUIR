@@ -37,6 +37,7 @@ void consumer();
 u_int8_t* generate_message();
 void handler_stop_proc();
 void display_message(const u_int8_t* message);
+void break_all_pthreads(const node_list* head);
 
 int main(void) {
 
@@ -114,6 +115,7 @@ int main(void) {
         getchar();
     }while(flag);
 
+    break_all_pthreads(list_of_ptreads);
     free(list_of_ptreads);
     free(queue);
 
@@ -158,6 +160,16 @@ void display_message(const u_int8_t* message) {
     printf("\n");
 }
 
+void break_all_pthreads(const node_list* head) {
+    if (head == NULL) {
+        return;
+    }
+    while(head) {
+        pthread_cancel(head->pthread_id);
+        head = head->next;
+    }
+}
+
 void handler_stop_proc() {
     FLAG_CONTINUE = false;
 }
@@ -182,7 +194,6 @@ void consumer() {
         printf("Total messages retrieved = %lu\n", queue->consumed);
         usleep(20000);
     }while(FLAG_CONTINUE);
-    pthread_join(pthread_self(), NULL);
 }
 
 void producer() {
@@ -205,7 +216,6 @@ void producer() {
         printf("Total ojbects created = %lu\n", queue->produced);
         usleep(20000);
     }while(FLAG_CONTINUE);
-    pthread_join(pthread_self(), NULL);
 }
 
 
