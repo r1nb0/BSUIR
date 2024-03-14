@@ -23,7 +23,6 @@ enum structure_of_message {
 
 sem_t* SEMAPHORE_EMPTY;
 sem_t* SEMAPHORE_FILLED;
-sem_t* SEMAPHORE_BLOCK_ALL;
 pthread_mutex_t mutex;
 ring_buffer* queue = NULL;
 _Thread_local bool FLAG_CONTINUE = true;
@@ -45,12 +44,9 @@ int main() {
 
     sem_unlink("SEMAPHORE_FILLED");
     sem_unlink("SEMAPHORE_EMPTY");
-    sem_unlink("SEMAPHORE_BLOCK_ALL");
-
 
     SEMAPHORE_FILLED = sem_open("SEMAPHORE_FILLED", O_CREAT, 0777, 0);
     SEMAPHORE_EMPTY = sem_open("SEMAPHORE_EMPTY", O_CREAT, 0777, BUFFER_SIZE);
-    SEMAPHORE_BLOCK_ALL = sem_open("SEMAPHORE_BLOCK_ALL", O_CREAT, 0777, 1);
     pthread_mutex_init(&mutex, NULL);
 
     for (size_t i = 0; i < BUFFER_SIZE; ++i)
@@ -121,7 +117,6 @@ int main() {
 
     sem_unlink("SEMAPHORE_FILLED");
     sem_unlink("SEMAPHORE_EMPTY");
-    sem_unlink("SEMAPHORE_BLOCK_ALL");
 
     sem_close(SEMAPHORE_EMPTY);
     sem_close(SEMAPHORE_FILLED);
