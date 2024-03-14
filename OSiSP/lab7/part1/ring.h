@@ -6,7 +6,8 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
-#define LEN_MESSAGE 256
+#define LEN_MESSAGE 260
+#define OFFSET 4
 
 typedef struct ring_node {
     struct ring_node* next;

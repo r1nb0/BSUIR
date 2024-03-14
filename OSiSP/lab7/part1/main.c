@@ -4,13 +4,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <fcntl.h>
 #include <time.h>
 #include <stdbool.h>
 #include "ring.h"
 #include <pthread.h>
 #include "list.h"
-
 
 enum structure_of_message {
     TYPE = 0,
@@ -19,7 +17,6 @@ enum structure_of_message {
     SIZE = 3,
     DATA_BEGIN = 4
 };
-
 
 #define INITIAL_SIZE_BUFFER 3
 
@@ -164,8 +161,15 @@ u_int8_t* generate_message() {
     srand(time(NULL));
     u_int8_t* result_message = (u_int8_t*)calloc(LEN_MESSAGE , sizeof(u_int8_t));
     size_t size = 0;
+    size_t data_size = 0;
     while(size == 0) size = rand() % 257;
-    for (size_t i = DATA_BEGIN; i < size; ++i) {
+    if (size == 256) {
+        size = 0;
+        data_size = 256;
+    }else {
+        data_size = ((size + 3) / 4) * 4;
+    }
+    for (size_t i = DATA_BEGIN; i < data_size; ++i) {
         result_message[i] = rand() % 256;
     }
     u_int16_t hash = control_sum(result_message, size);
@@ -177,11 +181,16 @@ u_int8_t* generate_message() {
 }
 
 void display_message(const u_int8_t* message) {
-    for (size_t i = 0; i < message[SIZE]; ++i)
+    size_t message_size = 0;
+    if (message[SIZE] == 0) {
+        message_size = LEN_MESSAGE;
+    }else {
+        message_size = message[SIZE] + OFFSET;
+    }
+    for (size_t i = 0; i < message_size; ++i)
         printf("%02X", message[i]);
     printf("\n");
 }
-
 void handler_stop_proc() {
     FLAG_CONTINUE = false;
 }
