@@ -7,7 +7,8 @@
 #include <sys/shm.h>
 #include <string.h>
 
-#define LEN_MESSAGE 256
+#define LEN_MESSAGE 260
+#define OFFSET 4
 
 typedef struct node_ring {
     int32_t shmid_curr;
@@ -33,3 +34,4 @@ u_int8_t* extract_message(ring_shared_buffer*);
 void clear_shared_memory(ring_shared_buffer*);
 
 #endif //RING_H
+

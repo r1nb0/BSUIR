@@ -63,7 +63,7 @@ void add_message(ring_shared_buffer* __ring, const u_int8_t* __message) {
 
     for (size_t i = 0; i < LEN_MESSAGE; ++i)
         __curr->message[i] = __message[i];
-    
+
     __curr->flag_is_busy = true;
     __ring->shmid_tail = __curr->shmid_next;
     __ring->produced++;
@@ -83,12 +83,12 @@ u_int8_t* extract_message(ring_shared_buffer* __ring) {
         printf("No messages to retrieve.\n");
         return NULL;
     }
+
     __curr->flag_is_busy = false;
     u_int8_t* __message = (u_int8_t*)calloc(LEN_MESSAGE, sizeof(u_int8_t));
 
     for (size_t i = 0; i < LEN_MESSAGE; ++i)
         __message[i] =  __curr->message[i];
-    
     __ring->shmid_begin = __curr->shmid_next;
     __ring->consumed++;
     return __message;
