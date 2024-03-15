@@ -8,7 +8,6 @@
 
 #define MAX_LEN_STRUCT_RECORD 80
 #define COUNT_RECORDS 10
-#define DELAY 10
 
 typedef struct record_s {
     char name[MAX_LEN_STRUCT_RECORD];
@@ -18,6 +17,8 @@ typedef struct record_s {
 
 int descriptor = 0;
 bool FLAG_EDIT = false;
+
+#define DELAY 10
 
 bool is_equal(const record_t* __first, const record_t* __second);
 bool record_copy(record_t* __dest, const record_t* __source);
@@ -169,13 +170,21 @@ void modify(size_t num_rec, record_t* __record, record_t* __record_save) {
         printf("3.Edit num of semester.\n");
         printf("4.Display edit record.\n");
         char ch = getchar();
+        char BUFFER[MAX_LEN_STRUCT_RECORD];
         switch(ch) {
             case '1': {
                 FLAG_EDIT = true;
+                printf("Enter the name: ");
+                scanf("%s", BUFFER);
+                strncpy(__record->name, BUFFER, MAX_LEN_STRUCT_RECORD);
+                rewind(stdin);
                 break;
             }
             case '2': {
                 FLAG_EDIT = true;
+                printf("Enter the address: ");
+                scanf("%s", BUFFER);
+                strncpy(__record->address, BUFFER, MAX_LEN_STRUCT_RECORD);
                 break;
             }
             case '3': {
@@ -197,6 +206,9 @@ void modify(size_t num_rec, record_t* __record, record_t* __record_save) {
         }
         getchar();
     }while(flag_continue);
+    if (is_equal(__record, __record_save)) {
+        FLAG_EDIT = false;
+    }
 }
 
 bool put_record(record_t* __record_new, const record_t* __record, const record_t* __record_save, size_t num_rec) {
