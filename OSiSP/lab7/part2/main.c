@@ -8,6 +8,7 @@
 
 #define MAX_LEN_STRUCT_RECORD 80
 #define COUNT_RECORDS 10
+#define DELAY 10
 
 typedef struct record_s {
     char name[MAX_LEN_STRUCT_RECORD];
@@ -17,7 +18,6 @@ typedef struct record_s {
 
 int descriptor = 0;
 bool FLAG_EDIT = false;
-
 
 bool is_equal(const record_t* __first, const record_t* __second);
 bool record_copy(record_t* __dest, const record_t* __source);
@@ -121,14 +121,17 @@ void all_records() {
     parameters.l_whence = SEEK_SET;
     parameters.l_start = 0;
     parameters.l_len = 0;
-    fcntl(descriptor, F_SETLK, &parameters);
+    if(fcntl(descriptor, F_SETLKW, &parameters) <0)
+        perror("F_SETLKW");
     record_t buffer;
     for (size_t i = 0; i < COUNT_RECORDS; ++i) {
         read(descriptor, &buffer, sizeof(record_t));
         printf("%lu. Name: %s, Address: %s, Num of semester: %hhu\n", i+1, buffer.name, buffer.address, buffer.semester);
     }
+    sleep(DELAY);
     parameters.l_type = F_UNLCK;
-    fcntl(descriptor, F_SETLK, &parameters);
+    if(fcntl(descriptor, F_SETLKW, &parameters) < 0)
+        perror("F_SETLKW");
     lseek(descriptor, 0, SEEK_SET);
 }
 
@@ -141,11 +144,14 @@ bool get_record(size_t num_rec, record_t* __record) {
     parameters.l_whence = SEEK_SET;
     parameters.l_start = (num_rec - 1) * sizeof(record_t);
     parameters.l_len = sizeof(record_t);
-    fcntl(descriptor, F_SETLK, &parameters);
+    if(fcntl(descriptor, F_SETLKW, &parameters) <0)
+        perror("F_SETLKW");
     lseek(descriptor, (num_rec - 1) * sizeof(record_t), SEEK_SET);
     read(descriptor, __record, sizeof(record_t));
+    //sleep(10);
     parameters.l_type = F_UNLCK;
-    fcntl(descriptor, F_SETLK, &parameters);
+    if(fcntl(descriptor, F_SETLKW, &parameters) < 0)
+        perror("F_SETLKW");
     lseek(descriptor, 0, SEEK_SET);
     return true;
 }
@@ -199,7 +205,8 @@ bool put_record(record_t* __record_new, const record_t* __record, const record_t
     parameters.l_whence = SEEK_SET;
     parameters.l_start = (num_rec - 1) * sizeof(record_t);
     parameters.l_len = sizeof(record_t);
-    fcntl(descriptor, F_SETLK, &parameters);
+    if(fcntl(descriptor, F_SETLKW, &parameters) < 0)
+        perror("F_SETLKW");
     parameters.l_type = F_UNLCK;
     get_record(num_rec, __record_new);
     if (!is_equal(__record_save, __record_new)) {
@@ -208,7 +215,8 @@ bool put_record(record_t* __record_new, const record_t* __record, const record_t
     }
     lseek(descriptor, (num_rec - 1) * sizeof(record_t), SEEK_SET);
     write(descriptor, __record, sizeof(record_t));
-    fcntl(descriptor, F_SETLK, &parameters);
+    if(fcntl(descriptor, F_SETLKW, &parameters) < 0)
+        perror("F_SETLKW");
     lseek(descriptor, 0, SEEK_SET);
     FLAG_EDIT = false;
     return true;
