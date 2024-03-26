@@ -1,0 +1,3 @@
+ECHO testserver1
+ECHO testserver2
+ECHO testserver3
