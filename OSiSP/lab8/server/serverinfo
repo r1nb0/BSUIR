@@ -1,0 +1,7 @@
+Welcome to the training server [TEST_SERVER].
+List of commands [INFO, ECHO, CD, LIST, QUIT].
+1. INFO : Get information about the server.
+2. ECHO : Send an echo request to the server to test the connection.
+3. CD: Set current server directory.
+4. LIST : Get a list of all files in the current server directory.
+5. QUIT: Submit a disconnect request.
