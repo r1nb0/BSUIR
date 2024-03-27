@@ -44,7 +44,7 @@ void execute_dir_args(DIR *__d) {
     struct dirent *dir = NULL;
     struct stat sb;
     memset(LIST_DIR, '\0', strlen(LIST_DIR));
-    strncat(LIST_DIR, "/", strlen("/"));
+    //strncat(LIST_DIR, "/", strlen("/"));
     strncat(LIST_DIR, CURRENT_DIR, strlen(CURRENT_DIR));
     strncat(LIST_DIR, "\n", strlen("\n"));
     while ((dir = readdir(__d))) {
@@ -149,13 +149,14 @@ int main(int argc, char *argv[]) {
     }
 
     strncpy(CURRENT_DIR, ".", strlen("."));
-
     DIR *d = opendir(argv[2]);
     if (d == NULL) {
         printf("The current directory could not be opened. "
             "Please check that the data is correct.");
         exit(EXIT_FAILURE);
     }
+
+    getcwd(CURRENT_DIR, MAX_LEN_BUFFER);
 
     struct addrinfo hints = {0};
     struct addrinfo *result = NULL;
@@ -209,6 +210,9 @@ int main(int argc, char *argv[]) {
                     write(fd_client, "", 1);
                 } else {
                     strncpy(CURRENT_DIR, QUERY + 3, size_query);
+                    chdir(CURRENT_DIR);
+                    getcwd(CURRENT_DIR, MAX_LEN_BUFFER);
+                    d = opendir(CURRENT_DIR);
                     QUERY[size_query - 1] = '\n';
                     write(fd_client, QUERY + 3, size_query - 3);
                     is_new_dir = true;
