@@ -88,6 +88,7 @@ void execute_file_args(const char *__filename, char **__buffer, size_t *__size) 
         return;
     }
     if (__buffer == NULL) {
+        fclose(file);
         return;
     }
     fseek(file, 0, SEEK_END);
