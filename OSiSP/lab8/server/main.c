@@ -79,6 +79,7 @@ void execute_dir_args(DIR *__d) {
         }
         strncat(LIST_DIR, "\n", strlen("\n"));
     }
+    closedir(__d);
 }
 
 void execute_file_args(const char *__filename, char **__buffer, size_t *__size) {
