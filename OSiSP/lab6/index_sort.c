@@ -24,8 +24,6 @@ pthread_mutex_t mutex;
 pthread_barrier_t barrier;
 size_t threads = 0;
 size_t memsize = 0;
-size_t fullsize = 0;
-size_t repeats = 0;
 size_t blocks = 0;
 size_t size_block = 0;
 size_t cnt_records = 0;
@@ -152,8 +150,6 @@ void mmap_file(const char *__filename) {
 
 
 int main(int argc, char *argv[]) {
-
-
     //check errors
 
     memsize = atoi(argv[MEMSIZE]);
@@ -192,20 +188,6 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < threads; ++i) {
         pthread_create(&pthrarray[i], NULL, memsize_sort, &indexes[i]);
     }
-
-    FILE *file = fopen(filename, "rb+");
-    if (file == NULL) {
-        fprintf(stderr, "Error file.\n");
-        exit(EXIT_FAILURE);
-    }
-    fseek(file, 0, SEEK_END);
-    fullsize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    repeats = fullsize / memsize;
-
-    printf("Full size file: %lu\n", fullsize);
-    printf("Repeats: %lu\n", repeats);
 
     mmap_file(filename);
 
